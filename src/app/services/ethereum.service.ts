@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ethers, utils } from 'ethers';
 import abi from '../contracts/Bank.json';
 declare let window: any;
@@ -18,7 +19,7 @@ export class EthereumService {
   customerAddress: string = '';
   error: string = '';
 
-  constructor() {}
+  constructor(private snackbar: MatSnackBar) {}
 
   async checkIfWalletIsConnected(): Promise<void> {
     try {
@@ -30,11 +31,21 @@ export class EthereumService {
         this.isWalletConnected = true;
         this.customerAddress = account;
         console.log('Account Connected: ', account);
+        this.snackbar.open(
+          '🎉🦊 Wallet connected! Account: ' + account,
+          'Close',
+          { duration: 5000 }
+        );
       } else {
         this.error = 'Please install a MetaMask wallet to use our bank.';
         console.log('No Metamask detected');
+        this.snackbar.open(this.error, 'Dismiss');
       }
     } catch (error) {
+      this.snackbar.open(
+        '🤔 Check if perhaps you dismissed the wallet connection popup',
+        'Close'
+      );
       console.log(error);
     }
   }
