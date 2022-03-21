@@ -19,26 +19,32 @@ export class AppComponent {
     public ethereumService: EthereumService,
     private snackbar: MatSnackBar
   ) {
-    this.ethereumService.checkIfWalletIsConnected();
+    this.ethereumService.checkIfWalletIsConnected().then((res) => {
+      if (res) this.isWalletConnected = res;
+    });
     this.ethereumService.getBankName();
     this.ethereumService.getBankOwner();
     this.ethereumService.customerBalance();
-    this.isWalletConnected = this.ethereumService.isWalletConnected;
   }
 
   public deposit() {
     this.snackbar.open(
-      '🙌🏻Transaction could take a while, so be patience',
+      '🙌🏻Transactions could take a while, so be patience',
       'Dismiss',
       { duration: 10000 }
     );
     this.ethereumService
       .depositMoney(this.depositControl.value)
-      .then(() => {
-        this.snackbar.open('✅ Deposit successful ', 'Dismiss', {
-          duration: 6000,
-        });
-        this.depositControl.reset();
+      .then((res) => {
+        if (res) {
+          this.snackbar.open('✅ Deposit successful ', 'Accept', {
+            duration: 6000,
+          });
+          this.depositControl.reset();
+        } else {
+          this.snackbar.open('💸 Please enter a valid amount', 'Dismiss');
+          this.depositControl.reset();
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -60,11 +66,16 @@ export class AppComponent {
     );
     this.ethereumService
       .withdrawMoney(this.withdrawControl.value)
-      .then(() => {
-        this.snackbar.open('✅ Withdraw successful ', 'Dismiss', {
-          duration: 6000,
-        });
-        this.withdrawControl.reset();
+      .then((res) => {
+        if (res) {
+          this.snackbar.open('✅ Withdraw successful ', 'Accept', {
+            duration: 6000,
+          });
+          this.depositControl.reset();
+        } else {
+          this.snackbar.open('💸 Please enter a valid amount', 'Dismiss');
+          this.depositControl.reset();
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -79,7 +90,17 @@ export class AppComponent {
   }
 
   public setBankName() {
-    this.ethereumService.setBankName(this.bankNameControl.value);
+    this.ethereumService.setBankName(this.bankNameControl.value).then((res) => {
+      if (res) {
+        this.snackbar.open('✅ Name changed successfully ', 'Accept', {
+          duration: 6000,
+        });
+        this.depositControl.reset();
+      } else {
+        this.snackbar.open('🚩 Please enter a valid name', 'Dismiss');
+        this.depositControl.reset();
+      }
+    });
     this.bankNameControl.reset();
   }
 }

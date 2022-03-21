@@ -21,7 +21,7 @@ export class EthereumService {
 
   constructor(private snackbar: MatSnackBar) {}
 
-  async checkIfWalletIsConnected(): Promise<void> {
+  async checkIfWalletIsConnected(): Promise<boolean> {
     try {
       if (window.ethereum) {
         const accounts = await window.ethereum.request({
@@ -36,10 +36,12 @@ export class EthereumService {
           'Close',
           { duration: 5000 }
         );
+        return true;
       } else {
         this.error = 'Please install a MetaMask wallet to use our bank.';
         console.log('No Metamask detected');
         this.snackbar.open(this.error, 'Dismiss');
+        return false;
       }
     } catch (error) {
       this.snackbar.open(
@@ -47,6 +49,7 @@ export class EthereumService {
         'Close'
       );
       console.log(error);
+      return false;
     }
   }
 
@@ -75,7 +78,10 @@ export class EthereumService {
     }
   }
 
-  async setBankName(bankName: string): Promise<void> {
+  async setBankName(bankName: string): Promise<boolean> {
+    if (bankName.length < 1) {
+      return false;
+    }
     try {
       if (window.ethereum) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -92,12 +98,15 @@ export class EthereumService {
         await txn.wait();
         console.log('Bank Name Cahnged ', txn.hash);
         await this.getBankName();
+        return true;
       } else {
         console.log('Ethereum object not found, install Metamask.');
         this.error = 'Please install a MetaMask wallet to use our bank.';
+        return false;
       }
     } catch (error) {
       console.log(error);
+      return false;
     }
   }
 
@@ -153,7 +162,11 @@ export class EthereumService {
     }
   }
 
-  async depositMoney(amount: number): Promise<void> {
+  async depositMoney(amount: number): Promise<boolean> {
+    if (amount <= 0) {
+      this.snackbar.open('💸 Please enter a valid amount', 'Dismiss');
+      return false;
+    }
     try {
       if (window.ethereum) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -170,16 +183,23 @@ export class EthereumService {
         await txn.wait();
         console.log('Deposit Complete', txn.hash);
         await this.customerBalance();
+        return true;
       } else {
         console.log('Ethereum object not found, install Metamask.');
         this.error = 'Please install a MetaMask wallet to use our bank.';
+        return false;
       }
     } catch (error) {
       console.log(error);
+      return false;
     }
   }
 
-  async withdrawMoney(amount: number): Promise<void> {
+  async withdrawMoney(amount: number): Promise<boolean> {
+    if (amount <= 0) {
+      this.snackbar.open('💸 Please enter a valid amount', 'Dismiss');
+      return false;
+    }
     try {
       if (window.ethereum) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -201,12 +221,15 @@ export class EthereumService {
         await txn.wait();
         console.log('Withdraw Complete', txn.hash);
         await this.customerBalance();
+        return true;
       } else {
         console.log('Ethereum object not found, install Metamask.');
         this.error = 'Please install a MetaMask wallet to use our bank.';
+        return false;
       }
     } catch (error) {
       console.log(error);
+      return false;
     }
   }
 }
